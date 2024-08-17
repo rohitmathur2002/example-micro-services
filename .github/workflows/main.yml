@@ -1,0 +1,50 @@
+name: Deployment to Amazon EKS
+
+on:
+  push:
+    branches:
+      - Main
+  pull_request:
+    branches:
+      - Main
+
+jobs: 
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: Production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.7
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4.0.2
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id:  ${{ secrets.ACCESS_KEY }}
+          aws-secret-access-key:  ${{ secrets.AWS_SECRET_KEY }}
+
+      - name: Login to Amazon ECR Private
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2.0.1
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build -t $ECR_REGISTRY:$(echo $GITHUB_SHA | head -c7) .
+          docker push $ECR_REGISTRY:$(echo $GITHUB_SHA | head -c7)
+
+      - name: Update deployment file
+        run: TAG=$(echo $GITHUB_SHA | head -c7) && sed -i 's|<IMAGE>|$ECR_REGISTRY:'${TAG}'|' $GITHUB_WORKSPACE/userhouseservice_dployment.yaml
+
+      - name: Login AWS EKS on Staging Cluster
+        run: aws eks update-kubeconfig --name ${{ secrets.CLUSTER_NAME }} --region ${{ secrets.CLUSTER_REGION }}
+ 
+      - name: Deploy to AWS EKS
+        run: kubectl apply -f $GITHUB_WORKSPACE/
+
+      - name: Verify deployment
+        run: kubectl rollout status deployment/${{ secrets.DEPLOYMENT_NAME }}
