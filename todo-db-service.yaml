@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: todo-db
+  template:
+    metadata:
+      labels:
+        app: todo-db
+    spec:
+      containers:
+      - name: todo-db
+        image: postgres:10
+        env:
+        - name: POSTGRES_USER
+          value: 
+        - name: POSTGRES_DB
+          value:
+        - name: POSTGRES_PASSWORD
+          value: 
+        - name: POSTGRES_PORT
+          value: 
+        ports:
+        - containerPort: 5433
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgres-data
+        persistentVolumeClaim:
+          claimName: todo-db-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: todo-db
+spec:
+  ports:
+  - port: 5433
+  selector:
+    app: todo-db
