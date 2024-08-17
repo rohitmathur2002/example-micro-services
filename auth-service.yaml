@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+      - name: auth
+        image: msalab01/auth:v1
+        env:
+        - name: POSTGRES_ENABLED
+          value: 
+        - name: DB_HOST
+          value: 
+        - name: DB_USER
+          value: 
+        - name: DB_NAME
+          value: 
+        - name: DB_PASSWORD
+          value: 
+        - name: DB_PORT
+          value: 
+        ports:
+        - containerPort: 8000
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8000
+    targetPort: 8000
+  selector:
+    app: auth
