@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: todo
+  template:
+    metadata:
+      labels:
+        app: todo
+    spec:
+      containers:
+      - name: todo
+        image: msalab01/todo:v1
+        env:
+        - name: POSTGRES_ENABLED
+          value:
+        - name: FLASK_ENV
+          value: 
+        - name: DB_HOST
+          value: 
+        - name: DB_USER
+          value: 
+        - name: DB_NAME
+          value: 
+        - name: DB_PASSWORD
+          value: 
+        - name: DB_PORT
+          value:
+        - name: AUTH_SERVICE_NAME
+          value: 
+        - name: AUTH_SERVICE_PORT
+          value: 
+        ports:
+        - containerPort: 5000
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: todo
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5000
+    targetPort: 5000
+  selector:
+    app: todo
