@@ -38,8 +38,7 @@ jobs:
           docker push $ECR_REGISTRY:$(echo $GITHUB_SHA | head -c7)
 
       - name: Update deployment file
-        run: TAG=$(echo $GITHUB_SHA | head -c7) && sed -i 's|<IMAGE>|$ECR_REGISTRY:'${TAG}'|' $GITHUB_WORKSPACE/userhouseservice_dployment.yaml
-
+        run: TAG=$(echo $GITHUB_SHA | head -c7) && sed -i 's|<IMAGE>|$ECR_REGISTRY:'${TAG}'|' $GITHUB_WORKSPACE/<filename>
       - name: Login AWS EKS on Staging Cluster
         run: aws eks update-kubeconfig --name ${{ secrets.CLUSTER_NAME }} --region ${{ secrets.CLUSTER_REGION }}
  
